@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:txdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate.format_sql: true
+      hibernate.jdbc.batch_size: 50
+
+grpc:
+  server:
+    port: 9090

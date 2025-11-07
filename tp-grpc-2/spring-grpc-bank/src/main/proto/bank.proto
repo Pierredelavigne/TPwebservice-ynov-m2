@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package com.example.springgrpcbank.proto;
+
+option java_multiple_files = true;
+option java_package = "com.example.springgrpcbank.proto";
+option java_outer_classname = "BankProto";
+
+message Empty {}
+
+// ===== Customer =====
+message CustomerId { int64 id = 1; }
+message CustomerCreateReq { string firstName = 1; string lastName = 2; string email = 3; }
+message CustomerRes { int64 id = 1; string firstName = 2; string lastName = 3; string email = 4; }
+
+// ===== Account =====
+message AccountId { int64 id = 1; }
+message AccountCreateReq { int64 customerId = 1; string iban = 2; double initialBalance = 3; }
+message AccountRes { int64 id = 1; string iban = 2; double balance = 3; int64 customerId = 4; }
+message AccountsByCustomerReq { int64 customerId = 1; }
+
+// ===== Operation =====
+enum OperationType { UNKNOWN = 0; DEPOSIT = 1; WITHDRAW = 2; TRANSFER = 3; }
+message OperationId { int64 id = 1; }
+message OperationCreateReq { int64 accountId = 1; OperationType type = 2; double amount = 3; string description = 4; }
+message OperationRes { int64 id = 1; int64 accountId = 2; OperationType type = 3; double amount = 4; string description = 5; string createdAt = 6; }
+message OperationsByAccountReq { int64 accountId = 1; }
+
+service CustomerService {
+  rpc Create (CustomerCreateReq) returns (CustomerRes);
+  rpc Get (CustomerId) returns (CustomerRes);
+  rpc List (Empty) returns (stream CustomerRes); // streaming serveur
+}
+
+service AccountService {
+  rpc Create (AccountCreateReq) returns (AccountRes);
+  rpc Get (AccountId) returns (AccountRes);
+  rpc ListByCustomer (AccountsByCustomerReq) returns (stream AccountRes); // streaming serveur
+}
+
+service OperationService {
+  rpc Create (OperationCreateReq) returns (OperationRes);
+  rpc StreamByAccount (OperationsByAccountReq) returns (stream OperationRes); // streaming serveur
+}
