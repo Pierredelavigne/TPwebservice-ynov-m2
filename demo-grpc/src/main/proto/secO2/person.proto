@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option java_package = "org.example.models.sec02";
+option java_multiple_files = true;
+
+package secO2;
+
+message Person {
+  string name = 1;
+  int32 age = 2;
+  string email = 3;
+  bool isActif = 4;
+}
+
+
+

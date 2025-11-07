@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option java_package = "org.example.models.sec01";
+
+package secO1;
+
+message Person {
+  string name = 1;
+  int32 age = 2;
+  string email = 3;
+}
+
+
+
