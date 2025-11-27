@@ -1,0 +1,80 @@
+scalar DateTime
+
+type Category {
+    id: ID!
+    name: String!
+    description: String
+    products: [Product!]!
+}
+
+type Product {
+    id: ID!
+    name: String!
+    description: String
+    price: Float!
+    stock: Int
+    category: Category
+    reviews: [Review!]!
+}
+
+type Review {
+    id: ID!
+    author: String!
+    comment: String
+    rating: Int!
+    createdAt: DateTime
+    product: Product!
+}
+
+input CategoryInput {
+    name: String!
+    description: String
+}
+
+input ProductInput {
+    name: String!
+    description: String
+    price: Float!
+    stock: Int
+    categoryId: ID
+}
+
+input ReviewInput {
+    author: String!
+    comment: String
+    rating: Int!
+    productId: ID!
+}
+
+type Query {
+    # Category
+    categories: [Category!]!
+    category(id: ID!): Category
+    
+    # Product
+    products: [Product!]!
+    product(id: ID!): Product
+    productsByCategory(categoryId: ID!): [Product!]!
+    
+    # Review
+    reviews: [Review!]!
+    review(id: ID!): Review
+    reviewsByProduct(productId: ID!): [Review!]!
+}
+
+type Mutation {
+    # Category
+    createCategory(input: CategoryInput!): Category!
+    updateCategory(id: ID!, input: CategoryInput!): Category!
+    deleteCategory(id: ID!): Boolean!
+    
+    # Product
+    createProduct(input: ProductInput!): Product!
+    updateProduct(id: ID!, input: ProductInput!): Product!
+    deleteProduct(id: ID!): Boolean!
+    
+    # Review
+    createReview(input: ReviewInput!): Review!
+    updateReview(id: ID!, input: ReviewInput!): Review!
+    deleteReview(id: ID!): Boolean!
+}
