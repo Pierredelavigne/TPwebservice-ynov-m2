@@ -16,5 +16,9 @@ spring:
       path: /h2-console
   graphql:
     graphiql:
-     enabled: true
-     path: /graphiql
+      enabled: true
+      path: /graphiql
+    http:
+      path: /api/graphql
+
+

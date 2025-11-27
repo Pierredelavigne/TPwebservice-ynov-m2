@@ -29,12 +29,12 @@ public class ProductController {
     }
 
     @MutationMapping
-    public Product createProduct(@Argument ProductInput productInput){
-        return productService.create(productInput);
+    public Product createProduct(@Argument ProductInput input){
+        return productService.create(input);
     }
     @MutationMapping
-    public Product updateProduct(@Argument Long id, @Argument ProductInput productInput){
-        return productService.update(id, productInput);
+    public Product updateProduct(@Argument Long id, @Argument ProductInput input){
+        return productService.update(id, input);
     }
 
     @MutationMapping

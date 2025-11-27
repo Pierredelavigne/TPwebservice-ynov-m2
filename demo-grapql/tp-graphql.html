@@ -1,0 +1,192 @@
+
+		<head>
+			<style type="text/css" media="screen">
+				body,html{font-family:var(--markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", system-ui, "Ubuntu", "Droid Sans", sans-serif);font-size:var(--markdown-font-size,14px);padding:0 26px;line-height:var(--markdown-line-height,22px);word-wrap:break-word}body{padding-top:1em}h1,h2,h3,h4,h5,h6,ol,p,pre,ul{margin-top:0}h2,h3,h4,h5,h6{font-weight:400;margin-bottom:.2em}img{max-width:100%;max-height:100%}a{text-decoration:none}a:hover{text-decoration:underline}a:focus,input:focus,select:focus,textarea:focus{outline:1px solid -webkit-focus-ring-color;outline-offset:-1px}p{margin-bottom:.7em}ol,ul{margin-bottom:.7em}hr{border:0;height:2px;border-bottom:2px solid}h1{padding-bottom:.3em;line-height:1.2;border-bottom-width:1px;border-bottom-style:solid;font-weight:400}table{border-collapse:collapse}th{text-align:left;border-bottom:1px solid}td,th{padding:5px 10px}table>tbody>tr+tr>td{border-top:1px solid}blockquote{margin:0 7px 0 5px;padding:0 16px 0 10px;border-left-width:5px;border-left-style:solid}code{font-family:var(--vscode-editor-font-family, "SF Mono", Monaco, Menlo, Consolas, "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace);font-size:1em;line-height:1.357em}body.wordWrap pre{white-space:pre-wrap}pre.hljs code>div,pre:not(.hljs){padding:16px;border-radius:3px;overflow:auto}pre code{color:var(--vscode-editor-foreground);tab-size:4}
+			</style>
+		</head>
+		<body>
+			<h1 id="tp---api-graphql-avec-spring-boot">TP - API GraphQL avec Spring Boot</h1>
+<h2 id="contexte">Contexte</h2>
+<p>Vous devez développer une API GraphQL pour une application e-commerce permettant de gérer un catalogue de produits avec catégories et avis clients.</p>
+<h2 id="modèle-de-données">Modèle de données</h2>
+<pre><code>Category (1) ──────&lt; (N) Product (1) ──────&lt; (N) Review
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Product</th>
+<th>Review</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>id</td>
+<td>id</td>
+</tr>
+<tr>
+<td>name</td>
+<td>name</td>
+<td>author</td>
+</tr>
+<tr>
+<td>description</td>
+<td>description</td>
+<td>comment</td>
+</tr>
+<tr>
+<td></td>
+<td>price</td>
+<td>rating</td>
+</tr>
+<tr>
+<td></td>
+<td>stock</td>
+<td>createdAt</td>
+</tr>
+<tr>
+<td></td>
+<td>category_id</td>
+<td>product_id</td>
+</tr>
+</tbody></table>
+<h2 id="travail-demandé">Travail demandé</h2>
+<h3 id="partie-1---setup">Partie 1 - Setup</h3>
+<ol>
+<li>Créer un projet Spring Boot avec les dépendances : <code>spring-boot-starter-graphql</code>, <code>spring-boot-starter-web</code>, <code>spring-boot-starter-data-jpa</code>, <code>h2</code>, <code>lombok</code></li>
+<li>Configurer H2 et GraphiQL dans <code>application.yml</code></li>
+</ol>
+<h3 id="partie-2---implémentation">Partie 2 - Implémentation</h3>
+<ol start="3">
+<li>Créer les 3 entités JPA avec leurs relations</li>
+<li>Créer les repositories</li>
+<li>Créer les services avec opérations CRUD</li>
+<li>Créer les controllers GraphQL</li>
+<li>Définir le schéma GraphQL (<code>schema.graphqls</code>)</li>
+</ol>
+<h3 id="partie-3---tests">Partie 3 - Tests</h3>
+<ol start="8">
+<li>Tester toutes les opérations via Postman ou GraphiQL :</li>
+</ol>
+<p>Implémenter et tester les requêtes suivantes :</p>
+<p><strong>Queries</strong></p>
+<table>
+<thead>
+<tr>
+<th>Requête</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Liste toutes les catégories</td>
+<td></td>
+</tr>
+<tr>
+<td>Récupère une catégorie par son ID</td>
+<td></td>
+</tr>
+<tr>
+<td>Liste tous les produits</td>
+<td></td>
+</tr>
+<tr>
+<td>Récupère un produit par son ID</td>
+<td></td>
+</tr>
+<tr>
+<td>Liste les produits d&#39;une catégorie</td>
+<td></td>
+</tr>
+<tr>
+<td>Liste tous les avis</td>
+<td></td>
+</tr>
+<tr>
+<td>Récupère un avis par son ID</td>
+<td></td>
+</tr>
+<tr>
+<td>Liste les avis d&#39;un produit</td>
+<td></td>
+</tr>
+</tbody></table>
+<p><strong>Mutations</strong></p>
+<table>
+<thead>
+<tr>
+<th>Mutation</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Crée une catégorie</td>
+<td></td>
+</tr>
+<tr>
+<td>Modifie une catégorie</td>
+<td></td>
+</tr>
+<tr>
+<td>Supprime une catégorie</td>
+<td></td>
+</tr>
+<tr>
+<td>Crée un produit</td>
+<td></td>
+</tr>
+<tr>
+<td>Modifie un produit</td>
+<td></td>
+</tr>
+<tr>
+<td>Supprime un produit</td>
+<td></td>
+</tr>
+<tr>
+<td>Crée un avis</td>
+<td></td>
+</tr>
+<tr>
+<td>Modifie un avis</td>
+<td></td>
+</tr>
+<tr>
+<td>Supprime un avis</td>
+<td></td>
+</tr>
+</tbody></table>
+<p><strong>Requêtes imbriquées (bonus)</strong></p>
+<table>
+<thead>
+<tr>
+<th>Requête</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Catégorie avec ses produits</td>
+<td></td>
+</tr>
+<tr>
+<td>Produit avec sa catégorie et ses avis</td>
+<td></td>
+</tr>
+<tr>
+<td>Avis avec son produit</td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id="livrables">Livrables</h2>
+<ul>
+<li>Code source du projet</li>
+<li>Collection Postman avec les requêtes de test</li>
+</ul>
+<h2 id="contraintes">Contraintes</h2>
+<ul>
+<li>Java 17+</li>
+<li>Spring Boot 3.x</li>
+<li>Base H2 en mémoire</li>
+<li>Endpoint : <code>POST /graphql</code></li>
+</ul>
+
+		</body>
