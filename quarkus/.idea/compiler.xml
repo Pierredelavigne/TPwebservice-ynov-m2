@@ -7,13 +7,17 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="quarkus-task-manager" />
-        <module name="quarkus-task-manager-cdi" />
+        <module name="quarkus-task-manager (1)" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="quarkus-task-manager-cdi" target="21" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="quarkus-task-manager" options="-parameters" />
+      <module name="quarkus-task-manager (1)" options="-parameters" />
       <module name="quarkus-task-manager-cdi" options="-parameters" />
     </option>
   </component>
