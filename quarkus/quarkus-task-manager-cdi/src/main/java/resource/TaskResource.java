@@ -3,6 +3,7 @@ package resource;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import services.TaskService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,80 +19,55 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TaskResource {
 
 
-    private final TaskResource taskResource;
+    private final TaskService taskService;
 
-    public TaskResource(TaskResource taskResource) {
-        this.taskResource = taskResource;
+    public TaskResource(TaskService taskService) {
+        this.taskService = taskService;
     }
 
 
     @GET
     public List<Map<String, Object>> getTasks() {
-        return taskResource.getTasks();
+        return taskService.getTasks();
     }
 
     @GET
     @Path("/{id}")
-    public Map<String, Object> getTask(@PathParam("id") long id) {
-        Map<String, Object> task = tasks.get(id);
-        if(task == null) {
-            throw new NotFoundException("Task not found with id " + id);
-        }
-        return task;
+    public Map<String, Object> getById(@PathParam("id") Long id) {
+        return taskService.findById(id);
     }
 
     @POST
     public Response create(Map<String, Object> body) {
-        long id = idGenerator.getAndIncrement();
-        Map<String, Object> task = new LinkedHashMap<>();
-        task.put("id", id);
-        task.put("title", body.get("title"));
-        task.put("description", body.get("description"));
-        task.put("status", body.getOrDefault("status", "TODO"));
-        task.put("priority", body.getOrDefault("priority", "MEDIUM"));
-        task.put("createdAt", LocalDateTime.now().toString());
-        tasks.put(id, task);
-
-        return Response.status(Response.Status.CREATED).entity(task).build();
+        Map<String, Object> created = taskService.create(body);
+        return Response.status(Response.Status.CREATED).entity(created).build();
     }
 
     @PUT
     @Path("/{id}")
     public Map<String, Object> update(@PathParam("id") Long id, Map<String, Object> body) {
-        Map<String, Object> task = tasks.get(id);
-        if (task == null) {
-            throw new NotFoundException("Tâche non trouvée : id=" + id);
-        }
-        if (body.containsKey("title")) task.put("title", body.get("title"));
-        if (body.containsKey("description")) task.put("description", body.get("description"));
-        if (body.containsKey("status")) task.put("status", body.get("status"));
-        if (body.containsKey("priority")) task.put("priority", body.get("priority"));
-        task.put("updatedAt", LocalDateTime.now().toString());
-        return task;
+        return taskService.update(id, body);
     }
-
 
     @DELETE
     @Path("/{id}")
     public Response delete(@PathParam("id") Long id) {
-        Map<String, Object> removed = tasks.remove(id);
-        if (removed == null) {
-            throw new NotFoundException("Tâche non trouvée : id=" + id);
-        }
+        taskService.delete(id);
         return Response.noContent().build();
     }
-
 
     @GET
     @Path("/search")
     public List<Map<String, Object>> search(@QueryParam("q") String query) {
-        if (query == null || query.isBlank()) {
-            return new ArrayList<>(tasks.values());
-        }
-        String q = query.toLowerCase();
-        return tasks.values().stream()
-                .filter(t -> t.get("title").toString().toLowerCase().contains(q))
-                .toList();
+        if (query == null || query.isBlank()) return taskService.getTasks();
+        return taskService.search(query);
+    }
+
+    @GET
+    @Path("/count")
+    @Produces(MediaType.TEXT_PLAIN)
+    public long count() {
+        return taskService.count();
     }
 
 }
