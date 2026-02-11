@@ -1,6 +1,8 @@
 package resource;
 
+import dto.TaskDTO;
 import entity.Task;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -28,25 +30,25 @@ public class TaskResource {
 
 
     @GET
-    public List<Task> getTasks() {
+    public List<TaskDTO> getTasks() {
         return taskService.getTasks();
     }
 
     @GET
     @Path("/{id}")
-    public Task getById(@PathParam("id") Long id) {
+    public TaskDTO getById(@PathParam("id") Long id) {
         return taskService.findById(id);
     }
 
     @POST
-    public Response create(Task body) {
-        Task created = taskService.create(body);
+    public Response create(@Valid TaskDTO body) {
+        TaskDTO created = taskService.create(body);
         return Response.status(Response.Status.CREATED).entity(created).build();
     }
 
     @PUT
     @Path("/{id}")
-    public Task update(@PathParam("id") Long id, Task body) {
+    public TaskDTO update(@PathParam("id") Long id, @Valid TaskDTO body) {
         return taskService.update(id, body);
     }
 
@@ -59,7 +61,7 @@ public class TaskResource {
 
     @GET
     @Path("/search")
-    public List<Task>search(@QueryParam("q") String query) {
+    public List<TaskDTO>search(@QueryParam("q") String query) {
         if (query == null || query.isBlank()) return taskService.getTasks();
         return taskService.search(query);
     }

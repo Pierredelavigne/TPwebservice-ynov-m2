@@ -10,6 +10,7 @@
         <module name="quarkus-task-manager" />
         <module name="quarkus-task-manager (3)" />
         <module name="quarkus-task-manager (1)" />
+        <module name="quarkus-task-manager (4)" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -22,6 +23,7 @@
       <module name="quarkus-task-manager (1)" options="-parameters" />
       <module name="quarkus-task-manager (2)" options="-parameters" />
       <module name="quarkus-task-manager (3)" options="-parameters" />
+      <module name="quarkus-task-manager (4)" options="-parameters" />
       <module name="quarkus-task-manager-cdi" options="-parameters" />
     </option>
   </component>

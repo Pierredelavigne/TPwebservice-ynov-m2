@@ -1,11 +1,13 @@
 package services;
 
+import dto.TaskDTO;
 import entity.Status;
 import entity.Task;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
+import mapper.TaskMapper;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.time.LocalDateTime;
@@ -19,33 +21,42 @@ import java.util.concurrent.atomic.AtomicLong;
 @ApplicationScoped
 public class TaskService {
 
+    private final TaskMapper mapper;
 
-    public List<Task> getTasks() {
-        return Task.listAll();
+    public TaskService(TaskMapper mapper) {
+        this.mapper = mapper;
     }
 
-    public Task findById(Long id) {
+
+    public List<TaskDTO> getTasks() {
+
+        return Task.<Task>listAll().stream().map(mapper::toDTO).toList();
+    }
+
+    public TaskDTO findById(Long id) {
        Task task =  Task.findById(id);
         if (task == null) {
             throw new NotFoundException("Tâche non trouvée :=" + id);
         }
-        return task;
+        return mapper.toDTO(task);
     }
 
     @Transactional
-    public Task create(Task task) {
+    public TaskDTO create(TaskDTO dto) {
+        Task task = mapper.toEntity(dto);
         task.persist();
-        return task;
+        Log.infof("Tâche créée : id=%d, title=%s", task.id, task.title);
+        return mapper.toDTO(task);
     }
 
     @Transactional
-    public Task update(Long id, Task input) {
+    public TaskDTO update(Long id, TaskDTO input) {
         Task task =  Task.findById(id);
         task.title = input.title;
         task.description = input.description;
         task.status = input.status;
         task.priority = input.priority;
-        return task;
+        return mapper.toDTO(task);
     }
 
     @Transactional
@@ -55,12 +66,12 @@ public class TaskService {
         }
     }
 
-    public List<Task> findByStatus(Status status) {
-        return Task.findByStatus(status);
+    public List<TaskDTO> findByStatus(Status status) {
+        return Task.findByStatus(status).stream().map(mapper::toDTO).toList();
     }
 
-    public List<Task> search(String query) {
-        return Task.search(query);
+    public List<TaskDTO> search(String query) {
+        return Task.search(query).stream().map(mapper::toDTO).toList();
     }
 
     public long count() {
