@@ -1,0 +1,648 @@
+
+		<head>
+			<style type="text/css" media="screen">
+				body,html{font-family:var(--markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", system-ui, "Ubuntu", "Droid Sans", sans-serif);font-size:var(--markdown-font-size,14px);padding:0 26px;line-height:var(--markdown-line-height,22px);word-wrap:break-word}body{padding-top:1em}h1,h2,h3,h4,h5,h6,ol,p,pre,ul{margin-top:0}h2,h3,h4,h5,h6{font-weight:400;margin-bottom:.2em}img{max-width:100%;max-height:100%}a{text-decoration:none}a:hover{text-decoration:underline}a:focus,input:focus,select:focus,textarea:focus{outline:1px solid -webkit-focus-ring-color;outline-offset:-1px}p{margin-bottom:.7em}ol,ul{margin-bottom:.7em}hr{border:0;height:2px;border-bottom:2px solid}h1{padding-bottom:.3em;line-height:1.2;border-bottom-width:1px;border-bottom-style:solid;font-weight:400}table{border-collapse:collapse}th{text-align:left;border-bottom:1px solid}td,th{padding:5px 10px}table>tbody>tr+tr>td{border-top:1px solid}blockquote{margin:0 7px 0 5px;padding:0 16px 0 10px;border-left-width:5px;border-left-style:solid}code{font-family:var(--vscode-editor-font-family, "SF Mono", Monaco, Menlo, Consolas, "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace);font-size:1em;line-height:1.357em}body.wordWrap pre{white-space:pre-wrap}pre.hljs code>div,pre:not(.hljs){padding:16px;border-radius:3px;overflow:auto}pre code{color:var(--vscode-editor-foreground);tab-size:4}
+			</style>
+		</head>
+		<body>
+			<h1 id="tp--quarkus-microservices--foodexpress">TP — Quarkus Microservices : <strong>FoodExpress</strong></h1>
+<h2 id="plateforme-de-livraison-de-repas-en-microservices">Plateforme de livraison de repas en microservices</h2>
+<hr>
+<h2 id="contexte-général">Contexte général</h2>
+<p>Vous êtes développeur·se au sein de la startup <strong>FoodExpress</strong>. L&#39;entreprise souhaite construire une plateforme de livraison de repas basée sur une <strong>architecture microservices</strong> avec <strong>Quarkus</strong>.</p>
+<p>Le système est composé de <strong>4 microservices</strong> qui collaborent via des appels REST synchrones :</p>
+<table>
+<thead>
+<tr>
+<th>Microservice</th>
+<th>Port</th>
+<th>Responsabilité</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>customer-service</strong></td>
+<td>8081</td>
+<td>Gestion des clients</td>
+</tr>
+<tr>
+<td><strong>restaurant-service</strong></td>
+<td>8082</td>
+<td>Gestion des restaurants et de leurs menus</td>
+</tr>
+<tr>
+<td><strong>order-service</strong></td>
+<td>8083</td>
+<td>Gestion des commandes</td>
+</tr>
+<tr>
+<td><strong>delivery-service</strong></td>
+<td>8084</td>
+<td>Gestion des livraisons et des livreurs</td>
+</tr>
+</tbody></table>
+<h3 id="schéma-darchitecture">Schéma d&#39;architecture</h3>
+<pre><code>┌──────────────┐       ┌───────────────────┐
+│   customer   │       │   restaurant      │
+│   service    │       │   service         │
+│   :8081      │       │   :8082           │
+└──────┬───────┘       └─────────┬─────────┘
+       │                         │
+       │    ┌────────────────┐   │
+       └───►│  order-service │◄──┘
+            │     :8083      │
+            └───────┬────────┘
+                    │
+                    ▼
+            ┌────────────────┐
+            │   delivery     │
+            │   service      │
+            │   :8084        │
+            └────────────────┘
+</code></pre>
+<p><strong>Flux principal :</strong></p>
+<ol>
+<li>Un <strong>client</strong> passe une commande en référençant un <strong>restaurant</strong> et des <strong>plats</strong></li>
+<li>Le <strong>order-service</strong> vérifie l&#39;existence du client (appel REST → customer-service) et du restaurant/plats (appel REST → restaurant-service)</li>
+<li>Une fois la commande validée, le <strong>order-service</strong> déclenche la création d&#39;une livraison (appel REST → delivery-service)</li>
+<li>Le <strong>delivery-service</strong> assigne un livreur disponible et suit l&#39;état de la livraison</li>
+</ol>
+<hr>
+<h2 id="objectifs-pédagogiques">Objectifs pédagogiques</h2>
+<p>Ce TP couvre les concepts suivants :</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Concepts</th>
+<th>Application dans le TP</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>01</td>
+<td>Introduction &amp; Philosophie</td>
+<td>Comprendre le mode dev, live reload, build natif, supersonic/subatomic</td>
+</tr>
+<tr>
+<td>02</td>
+<td>Installation &amp; Premier Projet</td>
+<td>Créer 4 projets Quarkus avec les bonnes extensions</td>
+</tr>
+<tr>
+<td>03</td>
+<td>CDI — Injection de dépendances</td>
+<td>Services métier, clients REST, patterns d&#39;injection</td>
+</tr>
+<tr>
+<td>04</td>
+<td>JAX-RS — API REST</td>
+<td>Endpoints CRUD, communication inter-services, REST Client</td>
+</tr>
+<tr>
+<td>05</td>
+<td>Hibernate ORM avec Panache</td>
+<td>Entités, repositories, Active Record vs Repository Pattern</td>
+</tr>
+<tr>
+<td>06</td>
+<td>Validation &amp; Gestion d&#39;erreur</td>
+<td>Bean Validation, ExceptionMapper, gestion des erreurs inter-services</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="prérequis">Prérequis</h2>
+<ul>
+<li>JDK 17+</li>
+<li>Maven 3.9+ ou Quarkus CLI</li>
+<li>Un IDE (IntelliJ IDEA recommandé)</li>
+<li>Docker (pour les bases de données)</li>
+<li>Un client HTTP (curl, Postman, ou extension VS Code REST Client)</li>
+</ul>
+<hr>
+<h2 id="partie-1--introduction--création-des-projets">Partie 1 — Introduction &amp; Création des projets</h2>
+<h3 id="11--création-des-4-microservices">1.1 — Création des 4 microservices</h3>
+<p>Créez un répertoire parent <code>foodexpress/</code> contenant les 4 projets.</p>
+<p>Pour chaque microservice, générez un projet Quarkus avec les extensions appropriées.</p>
+<p><strong>Extensions communes à tous les services :</strong></p>
+<ul>
+<li><code>quarkus-resteasy-reactive-jackson</code></li>
+<li><code>quarkus-hibernate-orm-panache</code></li>
+<li><code>quarkus-jdbc-postgresql</code></li>
+<li><code>quarkus-hibernate-validator</code></li>
+<li><code>quarkus-smallrye-openapi</code></li>
+</ul>
+<p><strong>Extension supplémentaire pour <code>order-service</code> et <code>delivery-service</code> :</strong></p>
+<ul>
+<li><code>quarkus-rest-client-reactive-jackson</code> (pour les appels inter-services)</li>
+</ul>
+<blockquote>
+<p>📌 <strong>Travail demandé :</strong></p>
+<ol>
+<li>Générez les 4 projets avec la commande <code>quarkus create app</code> ou via <a href="https://code.quarkus.io">code.quarkus.io</a></li>
+<li>Configurez le <code>application.properties</code> de chaque service avec :<ul>
+<li>Le port HTTP dédié (<code>quarkus.http.port</code>)</li>
+<li>La datasource PostgreSQL (une base distincte par service)</li>
+<li><code>quarkus.hibernate-orm.database.generation=drop-and-create</code> (pour le développement)</li>
+</ul>
+</li>
+<li>Lancez chaque service en mode dev (<code>quarkus dev</code>) et vérifiez que la Dev UI est accessible</li>
+<li>Consultez le Swagger UI de chaque service (<code>/q/swagger-ui</code>)</li>
+</ol>
+</blockquote>
+<p><strong>Docker Compose</strong> pour les bases de données (fichier à placer à la racine <code>foodexpress/</code>) :</p>
+<pre><code class="language-yaml"># Créez le fichier docker-compose.yml avec :
+# - 4 instances PostgreSQL (ports 5441, 5442, 5443, 5444)
+# - Un réseau partagé
+# - Des volumes persistants
+</code></pre>
+<hr>
+<h2 id="partie-2--cdi--injection-de-dépendances">Partie 2 — CDI : Injection de dépendances</h2>
+<h3 id="21--architecture-en-couches">2.1 — Architecture en couches</h3>
+<p>Chaque microservice doit respecter l&#39;architecture suivante :</p>
+<pre><code>src/main/java/com/foodexpress/{service}/
+├── entity/          # Entités JPA
+├── repository/      # Repositories Panache (si pattern Repository)
+├── service/         # Logique métier (beans CDI)
+├── resource/        # Endpoints JAX-RS
+├── client/          # Interfaces REST Client (si appels inter-services)
+├── dto/             # Objets de transfert (requêtes/réponses)
+└── exception/       # Exceptions métier + ExceptionMappers
+</code></pre>
+<h3 id="22--implémentation-des-services-cdi">2.2 — Implémentation des services CDI</h3>
+<blockquote>
+<p>📌 <strong>Travail demandé pour chaque microservice :</strong></p>
+<ol>
+<li>Créez une classe <strong>Service</strong> annotée <code>@ApplicationScoped</code> qui contient la logique métier</li>
+<li>Injectez les dépendances nécessaires via <code>@Inject</code></li>
+<li>Pour <code>order-service</code> : injectez les REST Clients vers <code>customer-service</code> et <code>restaurant-service</code></li>
+<li>Pour <code>delivery-service</code> : créez un service <code>DeliveryAssignmentService</code> qui sélectionne un livreur disponible</li>
+</ol>
+</blockquote>
+<h3 id="23--exercices-cdi-spécifiques">2.3 — Exercices CDI spécifiques</h3>
+<blockquote>
+<p>📌 <strong>Exercices :</strong></p>
+<p><strong>a)</strong> Dans <code>restaurant-service</code>, créez une interface <code>MenuFormatter</code> avec deux implémentations :</p>
+<ul>
+<li><code>SimpleMenuFormatter</code> — retourne le menu en texte brut</li>
+<li><code>DetailedMenuFormatter</code> — retourne le menu avec descriptions et allergènes</li>
+</ul>
+<p>Utilisez le qualifier <code>@Named</code> ou un <strong>qualifier personnalisé</strong> <code>@MenuFormat(type=SIMPLE|DETAILED)</code> pour choisir l&#39;implémentation à injecter.</p>
+<p><strong>b)</strong> Dans <code>delivery-service</code>, créez un bean <code>@Dependent</code> <code>DeliveryTracker</code> qui encapsule l&#39;état d&#39;une livraison en cours. Expliquez dans <code>REPONSES.md</code> pourquoi <code>@Dependent</code> est plus approprié que <code>@ApplicationScoped</code> ici.</p>
+<p><strong>c)</strong> Dans <code>order-service</code>, créez un <strong>producer method</strong> (<code>@Produces</code>) qui fournit un objet de configuration <code>OrderConfig</code> contenant les paramètres métier (montant minimum de commande, rayon de livraison max, etc.) lus depuis <code>application.properties</code> via <code>@ConfigProperty</code>.</p>
+</blockquote>
+<hr>
+<h2 id="partie-3--jax-rs--api-rest--communication-inter-services">Partie 3 — JAX-RS : API REST &amp; Communication inter-services</h2>
+<h3 id="31--endpoints-à-implémenter">3.1 — Endpoints à implémenter</h3>
+<h4 id="customer-service-port-8081"><strong>customer-service</strong> (port 8081)</h4>
+<table>
+<thead>
+<tr>
+<th>Méthode</th>
+<th>URI</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>POST</code></td>
+<td><code>/api/customers</code></td>
+<td>Créer un client</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/customers</code></td>
+<td>Lister tous les clients</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/customers/{id}</code></td>
+<td>Récupérer un client par ID</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/customers/{id}</code></td>
+<td>Mettre à jour un client</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/customers/{id}</code></td>
+<td>Supprimer un client</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/customers/{id}/exists</code></td>
+<td>Vérifier l&#39;existence (retourne <code>boolean</code>)</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/customers/search?city={city}</code></td>
+<td>Rechercher par ville</td>
+</tr>
+</tbody></table>
+<h4 id="restaurant-service-port-8082"><strong>restaurant-service</strong> (port 8082)</h4>
+<table>
+<thead>
+<tr>
+<th>Méthode</th>
+<th>URI</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>POST</code></td>
+<td><code>/api/restaurants</code></td>
+<td>Créer un restaurant</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/restaurants</code></td>
+<td>Lister tous les restaurants</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/restaurants/{id}</code></td>
+<td>Récupérer un restaurant avec son menu</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/restaurants/{id}</code></td>
+<td>Mettre à jour un restaurant</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/restaurants/{id}</code></td>
+<td>Supprimer un restaurant</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/restaurants/{id}/dishes</code></td>
+<td>Ajouter un plat au menu</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/restaurants/{id}/dishes/{dishId}</code></td>
+<td>Retirer un plat du menu</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/restaurants/{id}/dishes/{dishId}/exists</code></td>
+<td>Vérifier l&#39;existence d&#39;un plat</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/restaurants/search?cuisine={type}</code></td>
+<td>Rechercher par type de cuisine</td>
+</tr>
+</tbody></table>
+<h4 id="order-service-port-8083"><strong>order-service</strong> (port 8083)</h4>
+<table>
+<thead>
+<tr>
+<th>Méthode</th>
+<th>URI</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>POST</code></td>
+<td><code>/api/orders</code></td>
+<td>Créer une commande (déclenche les vérifications + livraison)</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/orders</code></td>
+<td>Lister toutes les commandes</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/orders/{id}</code></td>
+<td>Récupérer une commande avec son détail</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/orders/{id}/status</code></td>
+<td>Mettre à jour le statut d&#39;une commande</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/orders/customer/{customerId}</code></td>
+<td>Commandes d&#39;un client</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/orders/{id}</code></td>
+<td>Annuler une commande (si statut le permet)</td>
+</tr>
+</tbody></table>
+<h4 id="delivery-service-port-8084"><strong>delivery-service</strong> (port 8084)</h4>
+<table>
+<thead>
+<tr>
+<th>Méthode</th>
+<th>URI</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>POST</code></td>
+<td><code>/api/deliveries</code></td>
+<td>Créer une livraison (appelé par order-service)</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/deliveries/{id}</code></td>
+<td>Récupérer une livraison</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/deliveries/{id}/status</code></td>
+<td>Mettre à jour le statut (ASSIGNED → PICKED_UP → DELIVERED)</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/deliveries/driver/{driverId}</code></td>
+<td>Livraisons d&#39;un livreur</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/drivers</code></td>
+<td>Enregistrer un livreur</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/drivers/{id}/availability</code></td>
+<td>Changer la disponibilité d&#39;un livreur</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/drivers/available</code></td>
+<td>Lister les livreurs disponibles</td>
+</tr>
+</tbody></table>
+<h3 id="32--communication-inter-services-avec-rest-client">3.2 — Communication inter-services avec REST Client</h3>
+<blockquote>
+<p> <strong>Travail demandé :</strong></p>
+<p><strong>a)</strong> Dans <code>order-service</code>, créez les interfaces REST Client :</p>
+<pre><code class="language-java">// Exemple de structure attendue :
+@Path(&quot;/api/customers&quot;)
+@RegisterRestClient(configKey = &quot;customer-api&quot;)
+public interface CustomerRestClient {
+    // Déclarez les méthodes nécessaires
+}
+</code></pre>
+<p><strong>b)</strong> Configurez les URLs des services dans <code>application.properties</code> :</p>
+<pre><code class="language-properties">quarkus.rest-client.customer-api.url=http://localhost:8081
+quarkus.rest-client.restaurant-api.url=http://localhost:8082
+</code></pre>
+<p><strong>c)</strong> Implémentez le flux complet de création de commande :</p>
+<ol>
+<li>Recevoir la requête <code>POST /api/orders</code> avec le <code>customerId</code>, <code>restaurantId</code> et la liste des <code>dishIds</code> avec quantités</li>
+<li>Vérifier que le client existe (appel à <code>customer-service</code>)</li>
+<li>Vérifier que le restaurant et les plats existent (appels à <code>restaurant-service</code>)</li>
+<li>Calculer le montant total</li>
+<li>Persister la commande</li>
+<li>Déclencher la création d&#39;une livraison (appel à <code>delivery-service</code>)</li>
+<li>Retourner la commande créée avec les informations de livraison</li>
+</ol>
+<p><strong>d)</strong> Dans <code>delivery-service</code>, implémentez la logique d&#39;assignation automatique d&#39;un livreur disponible lors de la création d&#39;une livraison.</p>
+</blockquote>
+<h3 id="33--exercices-jax-rs-spécifiques">3.3 — Exercices JAX-RS spécifiques</h3>
+<blockquote>
+<p> <strong>Exercices :</strong></p>
+<p><strong>a)</strong> Implémentez la <strong>pagination</strong> sur tous les endpoints de listing (<code>GET</code> collections) avec les query params <code>page</code> et <code>size</code>. Retournez un objet enveloppe contenant : <code>data</code>, <code>page</code>, <code>size</code>, <code>totalElements</code>, <code>totalPages</code>.</p>
+<p><strong>b)</strong> Ajoutez des <strong>filtres</strong> sur <code>GET /api/restaurants</code> : filtrage par <code>cuisine</code>, <code>city</code>, <code>rating</code> minimum, et <code>open</code> (ouvert maintenant). Combinez les filtres dynamiquement.</p>
+<p><strong>c)</strong> Implémentez un endpoint <code>GET /api/orders/{id}/full</code> dans <code>order-service</code> qui retourne une vue agrégée contenant les détails du client, du restaurant et de la livraison (nécessite des appels vers les 3 autres services).</p>
+</blockquote>
+<hr>
+<h2 id="partie-4--hibernate-orm-avec-panache">Partie 4 — Hibernate ORM avec Panache</h2>
+<h3 id="41--modèle-de-données">4.1 — Modèle de données</h3>
+<p>Implémentez les entités suivantes :</p>
+<h4 id="customer-service">customer-service</h4>
+<pre><code>Customer
+├── id : Long (généré)
+├── firstName : String
+├── lastName : String
+├── email : String (unique)
+├── phone : String
+├── address : String
+├── city : String
+├── zipCode : String
+├── createdAt : LocalDateTime
+└── active : boolean
+</code></pre>
+<h4 id="restaurant-service">restaurant-service</h4>
+<pre><code>Restaurant                          Dish
+├── id : Long                       ├── id : Long
+├── name : String                   ├── name : String
+├── cuisine : String                ├── description : String
+├── address : String                ├── price : BigDecimal
+├── city : String                   ├── category : String (STARTER, MAIN, DESSERT, DRINK)
+├── phone : String                  ├── available : boolean
+├── rating : Double                 ├── allergens : String
+├── openingTime : LocalTime         └── restaurant : Restaurant (ManyToOne)
+├── closingTime : LocalTime
+├── active : boolean
+└── dishes : List&lt;Dish&gt; (OneToMany)
+</code></pre>
+<h4 id="order-service">order-service</h4>
+<pre><code>Order                               OrderItem
+├── id : Long                       ├── id : Long
+├── customerId : Long               ├── dishId : Long
+├── restaurantId : Long             ├── dishName : String
+├── status : OrderStatus            ├── unitPrice : BigDecimal
+│   (CREATED, CONFIRMED,            ├── quantity : int
+│    PREPARING, READY,              └── order : Order (ManyToOne)
+│    PICKED_UP, DELIVERED,
+│    CANCELLED)
+├── totalAmount : BigDecimal
+├── deliveryAddress : String
+├── createdAt : LocalDateTime
+├── updatedAt : LocalDateTime
+└── items : List&lt;OrderItem&gt; (OneToMany, cascade)
+</code></pre>
+<h4 id="delivery-service">delivery-service</h4>
+<pre><code>Delivery                            Driver
+├── id : Long                       ├── id : Long
+├── orderId : Long (unique)         ├── firstName : String
+├── driverId : Long                 ├── lastName : String
+├── status : DeliveryStatus         ├── phone : String
+│   (PENDING, ASSIGNED,             ├── vehicleType : String (BIKE, SCOOTER, CAR)
+│    PICKED_UP, IN_TRANSIT,         ├── available : boolean
+│    DELIVERED, FAILED)             ├── currentZone : String
+├── pickupAddress : String          └── rating : Double
+├── deliveryAddress : String
+├── estimatedTime : LocalDateTime
+├── deliveredAt : LocalDateTime
+└── createdAt : LocalDateTime
+</code></pre>
+<h3 id="42--choix-du-pattern-panache">4.2 — Choix du pattern Panache</h3>
+<blockquote>
+<p> <strong>Travail demandé :</strong></p>
+<p><strong>a)</strong> Implémentez <code>customer-service</code> et <code>restaurant-service</code> avec le <strong>pattern Active Record</strong> (entités étendent <code>PanacheEntity</code>).</p>
+<p><strong>b)</strong> Implémentez <code>order-service</code> et <code>delivery-service</code> avec le <strong>pattern Repository</strong> (entités simples + classes <code>PanacheRepository</code>).</p>
+<p><strong>c)</strong> Dans <code>REPONSES.md</code>, comparez les deux approches : avantages, inconvénients, et dans quel contexte vous choisiriez l&#39;une plutôt que l&#39;autre.</p>
+</blockquote>
+<h3 id="43--requêtes-panache-personnalisées">4.3 — Requêtes Panache personnalisées</h3>
+<blockquote>
+<p> <strong>Implémentez les requêtes suivantes :</strong></p>
+<p><strong>customer-service :</strong></p>
+<ul>
+<li>Trouver tous les clients actifs d&#39;une ville donnée</li>
+<li>Rechercher un client par email</li>
+<li>Compter le nombre de clients par ville</li>
+</ul>
+<p><strong>restaurant-service :</strong></p>
+<ul>
+<li>Trouver les restaurants ouverts à une heure donnée</li>
+<li>Trouver les restaurants par type de cuisine dans une ville</li>
+<li>Lister les plats disponibles d&#39;un restaurant par catégorie</li>
+<li>Trouver les restaurants ayant un rating supérieur à une valeur donnée</li>
+</ul>
+<p><strong>order-service :</strong></p>
+<ul>
+<li>Trouver les commandes d&#39;un client triées par date décroissante</li>
+<li>Trouver les commandes par statut</li>
+<li>Calculer le montant total des commandes d&#39;un client</li>
+<li>Trouver les commandes d&#39;un restaurant sur une période donnée</li>
+</ul>
+<p><strong>delivery-service :</strong></p>
+<ul>
+<li>Trouver les livreurs disponibles dans une zone</li>
+<li>Trouver les livraisons actives (non terminées) d&#39;un livreur</li>
+<li>Calculer le nombre de livraisons terminées par livreur (pour le rating)</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="partie-5--validation--gestion-derreurs">Partie 5 — Validation &amp; Gestion d&#39;erreurs</h2>
+<h3 id="51--bean-validation">5.1 — Bean Validation</h3>
+<blockquote>
+<p> <strong>Travail demandé :</strong></p>
+<p>Ajoutez les contraintes de validation sur toutes les entités et/ou DTOs :</p>
+<p><strong>Customer :</strong></p>
+<ul>
+<li><code>firstName</code> / <code>lastName</code> : obligatoires, entre 2 et 50 caractères</li>
+<li><code>email</code> : obligatoire, format email valide, unique</li>
+<li><code>phone</code> : obligatoire, pattern regex pour format téléphone</li>
+<li><code>zipCode</code> : obligatoire, pattern regex 5 chiffres</li>
+</ul>
+<p><strong>Restaurant :</strong></p>
+<ul>
+<li><code>name</code> : obligatoire, entre 2 et 100 caractères</li>
+<li><code>cuisine</code> : obligatoire</li>
+<li><code>phone</code> : format valide</li>
+<li><code>openingTime</code> doit être avant <code>closingTime</code></li>
+</ul>
+<p><strong>Dish :</strong></p>
+<ul>
+<li><code>name</code> : obligatoire</li>
+<li><code>price</code> : obligatoire, <code>@Positive</code></li>
+<li><code>category</code> : obligatoire, valeur parmi l&#39;enum autorisé</li>
+</ul>
+<p><strong>Order :</strong></p>
+<ul>
+<li><code>customerId</code> / <code>restaurantId</code> : obligatoires, <code>@NotNull</code></li>
+<li><code>items</code> : obligatoire, <code>@NotEmpty</code> (au moins 1 item)</li>
+<li>Chaque item : <code>dishId</code> <code>@NotNull</code>, <code>quantity</code> <code>@Min(1)</code></li>
+<li><code>deliveryAddress</code> : obligatoire</li>
+</ul>
+<p><strong>Driver :</strong></p>
+<ul>
+<li><code>firstName</code> / <code>lastName</code> : obligatoires</li>
+<li><code>phone</code> : obligatoire, format valide</li>
+<li><code>vehicleType</code> : obligatoire, valeur parmi l&#39;enum autorisé</li>
+</ul>
+</blockquote>
+<h3 id="52--validation-personnalisée">5.2 — Validation personnalisée</h3>
+<blockquote>
+<p> <strong>Exercice :</strong></p>
+<p>Créez une <strong>contrainte de validation personnalisée</strong> <code>@ValidOrderAmount</code> à placer sur la classe <code>Order</code> (validation au niveau classe). Cette contrainte vérifie que :</p>
+<ul>
+<li>Le montant total est cohérent avec la somme des items</li>
+<li>Le montant total est supérieur au minimum de commande (configurable)</li>
+</ul>
+<p>Implémentez le <code>ConstraintValidator</code> correspondant.</p>
+</blockquote>
+<h3 id="53--gestion-derreurs-globale">5.3 — Gestion d&#39;erreurs globale</h3>
+<blockquote>
+<p> <strong>Travail demandé :</strong></p>
+<p><strong>a)</strong> Créez un format d&#39;erreur standardisé utilisé par <strong>tous</strong> les microservices :</p>
+<pre><code class="language-json">{
+  &quot;timestamp&quot;: &quot;2025-01-15T10:30:00&quot;,
+  &quot;status&quot;: 404,
+  &quot;error&quot;: &quot;Not Found&quot;,
+  &quot;message&quot;: &quot;Customer with id 42 not found&quot;,
+  &quot;path&quot;: &quot;/api/customers/42&quot;,
+  &quot;service&quot;: &quot;customer-service&quot;
+}
+</code></pre>
+<p><strong>b)</strong> Créez les exceptions métier suivantes et leurs <code>ExceptionMapper</code> associés :</p>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Code HTTP</th>
+<th>Cas d&#39;usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ResourceNotFoundException</code></td>
+<td>404</td>
+<td>Entité non trouvée (client, restaurant, plat, commande, livraison)</td>
+</tr>
+<tr>
+<td><code>DuplicateResourceException</code></td>
+<td>409</td>
+<td>Email client déjà existant, commande doublon</td>
+</tr>
+<tr>
+<td><code>InvalidStatusTransitionException</code></td>
+<td>422</td>
+<td>Transition de statut invalide (ex: DELIVERED → CREATED)</td>
+</tr>
+<tr>
+<td><code>ServiceUnavailableException</code></td>
+<td>503</td>
+<td>Un microservice distant ne répond pas</td>
+</tr>
+<tr>
+<td><code>BusinessRuleException</code></td>
+<td>422</td>
+<td>Règle métier violée (montant min, restaurant fermé, etc.)</td>
+</tr>
+</tbody></table>
+<p><strong>c)</strong> Créez un <code>ExceptionMapper</code> pour <code>ConstraintViolationException</code> qui transforme les erreurs de validation en réponse structurée :</p>
+<pre><code class="language-json">{
+  &quot;timestamp&quot;: &quot;2025-01-15T10:30:00&quot;,
+  &quot;status&quot;: 400,
+  &quot;error&quot;: &quot;Validation Error&quot;,
+  &quot;message&quot;: &quot;La requête contient des erreurs de validation&quot;,
+  &quot;violations&quot;: [
+    { &quot;field&quot;: &quot;email&quot;, &quot;message&quot;: &quot;must be a valid email&quot; },
+    { &quot;field&quot;: &quot;firstName&quot;, &quot;message&quot;: &quot;size must be between 2 and 50&quot; }
+  ],
+  &quot;service&quot;: &quot;customer-service&quot;
+}
+</code></pre>
+</blockquote>
+<hr>
+<h2 id="livrables-attendus">Livrables attendus</h2>
+<ul>
+<li>Le code source des 4 microservices dans un dépôt Git</li>
+<li>Le fichier <code>docker-compose.yml</code> pour les bases de données</li>
+<li>Une collection Postman ou un fichier <code>.http</code> avec tous les appels de test</li>
+<li>Un <code>README.md</code> global expliquant comment lancer le projet</li>
+</ul>
+<hr>
+<h2 id="conseils">Conseils</h2>
+<blockquote>
+<ul>
+<li>Commencez par implémenter <code>customer-service</code> et <code>restaurant-service</code> qui sont autonomes, puis <code>order-service</code> et enfin <code>delivery-service</code></li>
+<li>Utilisez le <strong>Dev Mode</strong> de Quarkus (<code>quarkus dev</code>) pour bénéficier du live reload</li>
+<li>Consultez la <strong>Dev UI</strong> (<code>/q/dev-ui</code>) pour visualiser vos beans CDI, endpoints, et entités</li>
+<li>Exploitez le <strong>Swagger UI</strong> (<code>/q/swagger-ui</code>) pour tester vos endpoints pendant le développement</li>
+<li>N&#39;hésitez pas à utiliser <code>@Transactional</code> sur vos méthodes de service qui modifient la base de données</li>
+<li>Pensez à ajouter <code>@Produces(MediaType.APPLICATION_JSON)</code> et <code>@Consumes(MediaType.APPLICATION_JSON)</code> sur vos resources</li>
+</ul>
+</blockquote>
+<hr>
+<p><em>Bon courage les M2 ! 🎯</em></p>
+
+		</body>
