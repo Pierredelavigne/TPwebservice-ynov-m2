@@ -7,6 +7,8 @@
         <option value="$PROJECT_DIR$/quarkus-task-manager/pom.xml" />
         <option value="$PROJECT_DIR$/quarkus-task-manager-v1/pom.xml" />
         <option value="$PROJECT_DIR$/quarkus-task-manager-cdi-panache/pom.xml" />
+        <option value="$PROJECT_DIR$/quarkus-task-manager-cdi/pom.xml" />
+        <option value="$PROJECT_DIR$/quarkus-task-manager-panache-repository/pom.xml" />
       </list>
     </option>
   </component>

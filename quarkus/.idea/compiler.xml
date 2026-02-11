@@ -6,7 +6,9 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="quarkus-task-manager (2)" />
         <module name="quarkus-task-manager" />
+        <module name="quarkus-task-manager (3)" />
         <module name="quarkus-task-manager (1)" />
       </profile>
     </annotationProcessing>
@@ -18,6 +20,8 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="quarkus-task-manager" options="-parameters" />
       <module name="quarkus-task-manager (1)" options="-parameters" />
+      <module name="quarkus-task-manager (2)" options="-parameters" />
+      <module name="quarkus-task-manager (3)" options="-parameters" />
       <module name="quarkus-task-manager-cdi" options="-parameters" />
     </option>
   </component>
